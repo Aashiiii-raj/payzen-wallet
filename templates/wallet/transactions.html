@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Transactions — EWP{% endblock %}
+{% block page_title %}Transaction History{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <span><i class="bi bi-clock-history me-2"></i>All Transactions</span>
+    <span class="badge badge-info">{{ txns|length }} records</span>
+  </div>
+  <div class="card-body p-0">
+    {% if txns %}
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Txn ID</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Note</th>
+            <th>Status</th>
+            <th>Date & Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in txns %}
+          <tr>
+            <td><code style="color:#00D4AA; font-size:.76rem;">{{ t.txn_id }}</code></td>
+            <td>
+              {% if t.txn_type == 'credit' %}
+                <span class="badge badge-success"><i class="bi bi-arrow-down-left"></i> Credit</span>
+              {% elif t.txn_type == 'debit' %}
+                <span class="badge badge-danger"><i class="bi bi-arrow-up-right"></i> Debit</span>
+              {% else %}
+                <span class="badge badge-warning"><i class="bi bi-shop"></i> Merchant</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if t.receiver_id == uid and t.txn_type != 'merchant_pay' %}
+                <span class="txn-in">+₹{{ "%.2f"|format(t.amount) }}</span>
+              {% else %}
+                <span class="txn-out">-₹{{ "%.2f"|format(t.amount) }}</span>
+              {% endif %}
+            </td>
+            <td style="font-size:.82rem;">
+              {{ t.sender_name or '—' }}
+              {% if t.sender_wallet %}
+              <div style="font-size:.68rem; color:var(--muted); font-family:monospace;">{{ t.sender_wallet }}</div>
+              {% endif %}
+            </td>
+            <td style="font-size:.82rem;">
+              {% if t.txn_type == 'merchant_pay' %}
+                <span style="color:#F59E0B;">Merchant</span>
+              {% else %}
+                {{ t.receiver_name or '—' }}
+                {% if t.receiver_wallet %}
+                <div style="font-size:.68rem; color:var(--muted); font-family:monospace;">{{ t.receiver_wallet }}</div>
+                {% endif %}
+              {% endif %}
+            </td>
+            <td style="color:var(--muted); font-size:.8rem; max-width:160px;">{{ t.note or '—' }}</td>
+            <td><span class="badge badge-success">{{ t.status | capitalize }}</span></td>
+            <td style="color:var(--muted); font-size:.78rem; white-space:nowrap;">
+              {{ t.created_at.strftime('%d %b %Y') }}<br/>
+              <span style="font-size:.7rem;">{{ t.created_at.strftime('%H:%M:%S') }}</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5" style="color:var(--muted);">
+      <i class="bi bi-inbox" style="font-size:2.5rem; display:block; margin-bottom:12px; opacity:.4;"></i>
+      No transactions found.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

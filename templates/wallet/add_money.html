@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Add Money — EWP{% endblock %}
+{% block page_title %}Add Money{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-plus-circle-fill me-2" style="color:#22C55E;"></i>Add Money to Wallet
+      </div>
+      <div class="card-body">
+
+        <!-- Simulated payment methods -->
+        <p style="font-size:.82rem; color:var(--muted); margin-bottom:16px;">
+          <i class="bi bi-info-circle me-1"></i>
+          Simulated top-up — no real money involved (college project).
+        </p>
+
+        <div class="row g-2 mb-4">
+          {% for method, icon in [('UPI', 'bi-phone'), ('Net Banking', 'bi-bank'), ('Card', 'bi-credit-card'), ('Wallet', 'bi-wallet2')] %}
+          <div class="col-6">
+            <div class="p-3 text-center" style="background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:10px; cursor:pointer; font-size:.8rem; font-weight:600;">
+              <i class="bi {{ icon }} d-block mb-1" style="font-size:1.2rem; color:#0057FF;"></i>{{ method }}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <form method="POST" action="{{ url_for('add_money') }}">
+          <div class="mb-3">
+            <label class="form-label">Amount (₹)</label>
+            <div class="input-group">
+              <span class="input-group-text" style="background:rgba(255,255,255,.05); border:1px solid var(--border); border-right:none; color:var(--muted); border-radius:10px 0 0 10px;">₹</span>
+              <input type="number" name="amount" class="form-control" style="border-radius:0 10px 10px 0; border-left:none;"
+                     placeholder="0.00" min="1" max="100000" step="0.01" required/>
+            </div>
+          </div>
+
+          <!-- Quick amounts -->
+          <div class="d-flex gap-2 mb-4 flex-wrap">
+            {% for amt in [100, 500, 1000, 2000, 5000] %}
+            <button type="button" class="btn btn-sm"
+              style="background:rgba(0,87,255,.1); border:1px solid rgba(0,87,255,.3); color:#fff; border-radius:8px; font-size:.78rem;"
+              onclick="document.querySelector('[name=amount]').value={{ amt }}">
+              ₹{{ amt }}
+            </button>
+            {% endfor %}
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-plus-lg me-2"></i>Add Money
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

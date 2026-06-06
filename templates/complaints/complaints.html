@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Customer Care — EWP{% endblock %}
+{% block page_title %}Customer Care{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Complaint Form -->
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-headset me-2" style="color:#00D4AA;"></i>Raise a Complaint
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('complaints') }}">
+          <div class="mb-3">
+            <label class="form-label">Subject</label>
+            <select name="subject" class="form-select" required>
+              <option value="" disabled selected>Select issue type</option>
+              <option>Transaction Failed</option>
+              <option>Money Deducted But Not Received</option>
+              <option>Unable to Add Money</option>
+              <option>Account Hacked / Unauthorized Access</option>
+              <option>KYC Issue</option>
+              <option>Merchant Payment Issue</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Describe Your Issue</label>
+            <textarea name="message" class="form-control" rows="5"
+                      placeholder="Please describe the issue in detail, including transaction IDs if applicable..."
+                      required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-send me-2"></i>Submit Complaint
+          </button>
+        </form>
+
+        <div class="mt-4 p-3" style="background:rgba(0,212,170,.08); border:1px solid rgba(0,212,170,.2); border-radius:10px; font-size:.8rem; color:rgba(255,255,255,.7);">
+          <i class="bi bi-clock me-2" style="color:#00D4AA;"></i>
+          Average response time: <strong style="color:#00D4AA;">Within 24 hours</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Complaints -->
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span><i class="bi bi-list-check me-2"></i>My Complaints</span>
+        <span class="badge badge-info">{{ complaints|length }}</span>
+      </div>
+      <div class="card-body p-0">
+        {% if complaints %}
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Filed On</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in complaints %}
+              <tr>
+                <td style="color:var(--muted); font-size:.8rem;">#{{ c.id }}</td>
+                <td style="font-size:.85rem;">{{ c.subject }}</td>
+                <td>
+                  {% if c.status == 'open' %}
+                    <span class="badge badge-warning">Open</span>
+                  {% elif c.status == 'resolved' %}
+                    <span class="badge badge-success">Resolved</span>
+                  {% else %}
+                    <span class="badge badge-info">In Progress</span>
+                  {% endif %}
+                </td>
+                <td style="color:var(--muted); font-size:.78rem;">{{ c.created_at.strftime('%d %b %Y') }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5" style="color:var(--muted);">
+          <i class="bi bi-emoji-smile" style="font-size:2.5rem; display:block; margin-bottom:12px; opacity:.4;"></i>
+          No complaints yet. Great!
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="card mt-4">
+      <div class="card-header"><i class="bi bi-question-circle me-2"></i>Quick Help</div>
+      <div class="card-body p-0">
+        <div class="accordion accordion-flush" id="faqAccordion">
+          {% for q, a in [
+            ('How do I add money?', 'Go to Add Money → select amount → confirm.'),
+            ('How long does a transfer take?', 'All transfers are instant within the EWP network.'),
+            ('Can I cancel a transaction?', 'Transactions are irreversible. Contact support immediately if fraudulent.'),
+            ('Is my wallet secure?', 'Yes. Passwords are hashed with bcrypt and sessions are encrypted.'),
+          ] %}
+          <div class="accordion-item" style="background:transparent; border:none; border-bottom:1px solid var(--border);">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" style="background:transparent; color:var(--text); font-size:.85rem; font-weight:600;"
+                      type="button" data-bs-toggle="collapse" data-bs-target="#faq{{ loop.index }}">
+                {{ q }}
+              </button>
+            </h2>
+            <div id="faq{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body" style="font-size:.82rem; color:var(--muted);">{{ a }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

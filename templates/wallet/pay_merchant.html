@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Pay Merchant — EWP{% endblock %}
+{% block page_title %}Merchant Payment{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-shop-window me-2" style="color:#F59E0B;"></i>Pay a Merchant
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('pay_merchant') }}">
+          <div class="mb-4">
+            <label class="form-label">Select Merchant</label>
+            <select name="merchant_id" class="form-select" required>
+              <option value="" disabled selected>— Choose a merchant —</option>
+              {% for m in merchants %}
+              <option value="{{ m.id }}">{{ m.name }} ({{ m.category }}) · {{ m.merchant_code }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Amount (₹)</label>
+            <div class="input-group">
+              <span class="input-group-text" style="background:rgba(255,255,255,.05); border:1px solid var(--border); border-right:none; color:var(--muted); border-radius:10px 0 0 10px;">₹</span>
+              <input type="number" name="amount" class="form-control" style="border-radius:0 10px 10px 0; border-left:none;"
+                     placeholder="0.00" min="1" step="0.01" required/>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-check-circle me-2"></i>Pay Now
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Merchant grid (decorative) -->
+    <div class="card mt-4">
+      <div class="card-header">Available Merchants</div>
+      <div class="card-body">
+        <div class="row g-2">
+          {% for m in merchants %}
+          <div class="col-6 col-md-3">
+            <div class="text-center p-3" style="background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:10px;">
+              <i class="bi bi-bag-check d-block mb-1" style="font-size:1.3rem; color:#F59E0B;"></i>
+              <div style="font-size:.72rem; font-weight:600;">{{ m.name }}</div>
+              <div style="font-size:.65rem; color:var(--muted);">{{ m.category }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

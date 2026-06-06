@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — EWP{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stat Cards -->
+<div class="row g-4 mb-4">
+  {% for label, val, icon, color, bg in [
+    ('Total Users',       total_users,    'bi-people-fill',       '#0057FF', 'rgba(0,87,255,.15)'),
+    ('Total Transactions',total_txns,     'bi-arrow-left-right',  '#22C55E', 'rgba(34,197,94,.15)'),
+    ('Total Top-ups (₹)', total_topup|round(2), 'bi-cash-stack', '#F59E0B', 'rgba(245,158,11,.15)'),
+    ('Open Complaints',   open_complaints,'bi-chat-left-dots',    '#EF4444', 'rgba(239,68,68,.15)'),
+  ] %}
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:{{ bg }}; color:{{ color }};">
+        <i class="bi {{ icon }}"></i>
+      </div>
+      <div class="stat-value">{{ val }}</div>
+      <div class="stat-label">{{ label }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Users + Transactions -->
+<div class="row g-4 mb-4">
+  <!-- Recent Users -->
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header"><i class="bi bi-people me-2"></i>Recent Users</div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr><th>Name</th><th>Wallet ID</th><th>Balance</th><th>Joined</th></tr>
+            </thead>
+            <tbody>
+              {% for u in users %}
+              <tr>
+                <td>
+                  <div style="font-weight:600; font-size:.85rem;">{{ u.name }}</div>
+                  <div style="font-size:.72rem; color:var(--muted);">{{ u.email }}</div>
+                </td>
+                <td><code style="color:#00D4AA; font-size:.76rem;">{{ u.wallet_id }}</code></td>
+                <td style="font-weight:700; color:#22C55E;">₹{{ "%.2f"|format(u.balance) }}</td>
+                <td style="color:var(--muted); font-size:.78rem;">{{ u.created_at.strftime('%d %b') }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Transactions -->
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header"><i class="bi bi-lightning me-2"></i>Recent Transactions</div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr><th>Txn ID</th><th>User</th><th>Amount</th><th>Type</th></tr>
+            </thead>
+            <tbody>
+              {% for t in recent_txns %}
+              <tr>
+                <td><code style="color:#00D4AA; font-size:.72rem;">{{ t.txn_id }}</code></td>
+                <td style="font-size:.82rem;">{{ t.sender_name or '—' }}</td>
+                <td style="font-weight:700;">₹{{ "%.2f"|format(t.amount) }}</td>
+                <td>
+                  {% if t.txn_type == 'credit' %}
+                    <span class="badge badge-success">Credit</span>
+                  {% elif t.txn_type == 'debit' %}
+                    <span class="badge badge-danger">Debit</span>
+                  {% else %}
+                    <span class="badge badge-warning">Merchant</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Complaints Management -->
+<div class="card">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <span><i class="bi bi-headset me-2"></i>All Customer Complaints</span>
+    <span class="badge badge-danger">{{ open_complaints }} Open</span>
+  </div>
+  <div class="card-body p-0">
+    {% if all_complaints %}
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr><th>#</th><th>User</th><th>Subject</th><th>Message</th><th>Status</th><th>Filed</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          {% for c in all_complaints %}
+          <tr>
+            <td style="color:var(--muted); font-size:.8rem;">#{{ c.id }}</td>
+            <td style="font-size:.82rem; font-weight:600;">{{ c.user_name }}</td>
+            <td style="font-size:.82rem;">{{ c.subject }}</td>
+            <td style="font-size:.78rem; color:var(--muted); max-width:220px;">
+              {{ c.message[:80] }}{% if c.message|length > 80 %}...{% endif %}
+            </td>
+            <td>
+              {% if c.status == 'open' %}
+                <span class="badge badge-warning">Open</span>
+              {% elif c.status == 'resolved' %}
+                <span class="badge badge-success">Resolved</span>
+              {% else %}
+                <span class="badge badge-info">In Progress</span>
+              {% endif %}
+            </td>
+            <td style="color:var(--muted); font-size:.78rem;">{{ c.created_at.strftime('%d %b %Y') }}</td>
+            <td>
+              {% if c.status != 'resolved' %}
+              <a href="{{ url_for('resolve_complaint', cid=c.id) }}"
+                 class="btn btn-sm"
+                 style="background:rgba(34,197,94,.15); color:#22C55E; border:none; border-radius:8px; font-size:.75rem;"
+                 onclick="return confirm('Mark as resolved?')">
+                <i class="bi bi-check-lg"></i> Resolve
+              </a>
+              {% else %}
+              <span style="font-size:.75rem; color:var(--muted);">✓ Done</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5" style="color:var(--muted);">
+      <i class="bi bi-inbox" style="font-size:2rem; display:block; opacity:.3;"></i>
+      No complaints yet.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
